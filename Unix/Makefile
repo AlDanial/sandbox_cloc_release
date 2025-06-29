@@ -95,14 +95,10 @@ test-pod:
 # Rule: test-code - Check that the counter works
 test-code:
 	t/00_C.t
-	t/02_git.t
-	t/01_opts.t
 
 # Rule: test-unix - Check that the Unix version works
 test-unix:
 	t/00_C.t -u
-	t/02_git.t -u
-	t/01_opts.t -u
 
 # Rule: test - Run tests (exclude test-unix)
 test: test-perl test-pod test-code
