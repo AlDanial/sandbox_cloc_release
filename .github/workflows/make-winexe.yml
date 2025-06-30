@@ -1,0 +1,55 @@
+# .github/workflows/build-windows.yml
+
+name: Build Perl Executable for Windows
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events but only for the main branch
+  push:
+    branches: [ main, master ]
+  
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build-exe:
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+
+    steps:
+      # 1. Check out your repository code so the workflow can access it
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Strawberry Perl on the Windows runner
+      # This action handles downloading, installing, and adding Perl to the PATH
+      - name: Set up Strawberry Perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          # We explicitly ask for the 'strawberry' distribution
+          distribution: 'strawberry'
+          # You can pin this to a specific version like '5.38' for more stable builds
+          perl-version: 'latest'
+
+      # 3. Install required CPAN modules
+      # The -T flag tells cpan not to ask any questions, which is essential for automation.
+      - name: Install CPAN modules
+        run: cpan -T Digest::MD5 Regexp::Common Algorithm::Diff PAR::Packer Win32::LongPath
+        shell: cmd
+
+      # 4. Build the executable using PAR::Packer's 'pp' command
+      # This uses the exact command you specified.
+      # Make sure '.pl' is the correct name of your main script.
+      - name: Build executable with pp
+        run: pp -M Win32::LongPath -M Encode::Unicode -M Digest::MD5 -c -x -o cloc-2.05.exe cloc
+        shell: cmd
+
+      # 5. Upload the generated executable as a build artifact
+      # This makes the .exe file available for download from the workflow's summary page.
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          # The name of the artifact bundle you will see in the GitHub UI
+          name: windows-executable
+          # The path to the file(s) to upload. Here, it's just our new .exe
+          path: cloc-2.05.exe
